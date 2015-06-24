@@ -1,0 +1,179 @@
+﻿
+@font-face {
+    font-family: 'FontAwesome';
+    src: url('fontawesome-webfont.woff?v=4.3.0') format('woff'), url('fontawesome-webfont.woff2?v=4.3.0') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.esriPopup .extended {
+}
+
+.esriPopup.extended {
+    font-family: Arial;
+    visibility: hidden;
+}
+
+    .esriPopup.extended.esriPopupVisible {
+        -moz-transition: opacity 0.2s ease-in-out;
+        -o-transition: opacity 0.2s ease-in-out;
+        -webkit-transition: opacity 0.2s ease-in-out;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .esriPopup.extended .esriPopupWrapper {
+        background-color: #f9f9f9;
+        border-radius: 0;
+        border: 1px solid #ccc;
+        box-shadow: none;
+    }
+
+
+
+    .esriPopup.extended .titlePane, .dj_ie7 .esriPopup.extended .titlePane .title, .esriPopup.extended .contentPane, .esriPopup.extended .actionsPane {
+        background-color: inherit;
+        color: #222;
+    }
+
+    .esriPopup.extended .titlePane {
+        font-size: 12px;
+        line-height: 16px;
+        height: 16px;
+        padding: 5px;
+        border-bottom: 1px solid #e2e2e2;
+    }
+
+        .esriPopup.extended .titlePane .title {
+            line-height: 16px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+    .esriPopup.extended .titleButton, .esriPopup.extended .actionsPane .action {
+        /*font-family: FontAwesome;*/
+        font-family: "popup", Arial;
+        text-align: center;
+        width: 16px;
+        height: 16px;
+        background: none;
+        font-size: 14px;
+        line-height: 16px;
+        top: 5px;
+        color: #447AEF;
+    }
+
+    .esriPopup.extended .actionsPane .action {
+        font-size: 12px;
+        text-decoration: none;
+    }
+
+        .esriPopup.extended .actionsPane .action.iconText:before {
+            font-family: FontAwesome;
+            content: "\f001";
+        }
+
+        .esriPopup.extended .actionsPane .action.iconOnly:before {
+            font-family: FontAwesome;
+            content: "\f011";
+        }
+
+        .esriPopup.extended .titleButton:hover, .esriPopup.extended .actionsPane .action:hover {
+            color: #1e3565;
+            -webkit-transition: color 0.6s ease-in-out;
+            -moz-transition: color 0.6s ease-in-out;
+            -o-transition: color 0.6s ease-in-out;
+            transition: color 0.6s ease-in-out;
+        }
+
+    .esriPopup.extended .actionsPane {
+        padding: 2px 5px 2px 5px;
+        border-top: 1px solid #e2e2e2;
+    }
+
+    .esriPopup.extended .pe-resizer {
+        border-width: 8px !important;
+        border-left-color: #333 !important;
+    }
+
+    .esriPopup.extended .mainSection .header {
+        margin-bottom: 4px;
+        text-transform: uppercase;
+    }
+
+    .esriPopup.extended .mainSection .hzLine {
+        display: none;
+    }
+
+    .esriPopup.extended .mainSection .break:last-of-type {
+        display: none;
+    }
+
+    .esriPopup.extended .titleButton.prev {
+        right: 73px;
+    }
+
+        .esriPopup.extended .titleButton.prev:before {
+            content: "\e809";
+        }
+
+    .esriPopup.extended .titleButton.next {
+        right: 55px;
+    }
+
+        .esriPopup.extended .titleButton.next:before {
+            content: "\e808";
+        }
+
+    .esriPopup.extended .titleButton.maximize, .esriPopup.extended .titleButton.restore {
+        right: 31px;
+    }
+
+        .esriPopup.extended .titleButton.maximize:before {
+            content: "\e802";
+        }
+
+        .esriPopup.extended .titleButton.restore:before {
+            content: "\e805";
+        }
+
+    .esriPopup.extended .titleButton.close {
+        right: 10px;
+    }
+
+        .esriPopup.extended .titleButton.close:before {
+            content: "\e806";
+        }
+
+    .esriPopup.extended .contentPane {
+        padding: 5px;
+        border: 0;
+    }
+
+
+    .esriPopup.extended .pointer, .esriPopup.extended .outerPointer {
+        /*background: #fff;*/
+        background: #f9f9f9;
+        box-shadow: none;
+    }
+
+        .esriPopup.extended .pointer.bottom, .esriPopup.extended .pointer.bottomLeft, .esriPopup.extended .pointer.bottomRight {
+            border-right: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            bottom: -10px;
+        }
+
+        .esriPopup.extended .pointer.top, .esriPopup.extended .pointer.topRight, .esriPopup.extended .pointer.topLeft {
+            border-top: 1px solid #ccc;
+            border-left: 1px solid #ccc;
+            top: -10px;
+        }
+
+        .esriPopup.extended .outerPointer.left {
+            border-left: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .esriPopup.extended .outerPointer.right {
+            border-top: 1px solid #ccc;
+            border-right: 1px solid #ccc;
+        }

@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+
+    <title>ArcGIS jsapi Advanced Popup Example</title>
+    <link rel="stylesheet" href="http://js.arcgis.com/3.13/esri/css/esri.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.13/dijit/themes/claro/claro.css">
+    <link href="ncam/PopupExtended.css" rel="stylesheet" />
+
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Calibri;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            position: relative;
+        }
+    </style>
+
+
+    <script>
+        var dojoConfig = {
+            parseOnLoad: false,
+            async: true,
+            tlmSiblingOfDojo: false,
+            packages: [{
+                name: "ncam",
+                location: location.pathname.replace(/\/[^/]+$/, '') + "ncam"
+            }]
+        };
+    </script>
+
+    <script src="http://js.arcgis.com/3.13/"></script>
+
+    <script type="text/javascript">
+
+        var map;
+        var graphics;
+
+
+        require(["dojo/_base/lang", "dojo/dom", "dojo/dom-construct", "esri/map", "esri/layers/graphics", "esri/layers/FeatureLayer", "esri/graphic", "esri/geometry/Point", "esri/InfoTemplate", "esri/dijit/PopupTemplate",
+               "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", "esri/dijit/Popup", "esri/dijit/PopupMobile", "ncam/PopupExtended", "dojo/ready"],
+        function (lang, dom, domConstruct, Map, GraphicsLayer, FeatureLayer, Graphic, Point, InfoTemplate, PopupTemplate, SimpleMarkerSymbol, SimpleLineSymbol, Popup, PopupMobile, PopupExtended, ready) {
+
+            ready(function () {
+
+
+                map = new Map("map", {
+                    center: [133, -25],
+                    zoom: 4,
+                    basemap: "gray",
+                    minZoom: 3
+                });
+
+
+                map.on("load", function () {
+                    //create a template tfor world regions layer.
+                    //Adding an extended property to set the theme and a custom action.
+                    var wrTemplate = new PopupTemplate({
+                        title: "{REGION}",
+                        fieldInfos: [
+                            { fieldName: "SQMI", label: "Square Miles", visible: true },
+                            { fieldName: "SQKM", label: "Square KM", visible: true },
+                        ],
+                        extended: {
+                            actions: [
+                                { text: "World region action", className: "wrAction", title: "Clicking on a world region custom action", click: function (feature) { alert("World region action clicked on - " + feature.attributes.REGION); } }
+                            ],
+                            themeClass: "dark"
+                        }
+                    });
+
+                    var wrUrl = "http://sampleserver6.arcgisonline.com/arcgis/rest/services/WorldTimeZones/MapServer/2";
+                    var wr = new FeatureLayer(wrUrl, {
+                        id: "world-regions",
+                        infoTemplate: wrTemplate,
+                        outFields: "*"
+                    });
+                    map.addLayer(wr);
+
+                    //add world cities feature layer from arcgis online. Create a popup template for it. No extended object on this template so it will 
+                    //use the actions, theme and scaleSelected properties defined in the constructor of PopupExtended if they are defined.
+                    var flTemplate = new PopupTemplate({
+                        title: "{CITY_NAME}",
+                        fieldInfos: [
+                            { fieldName: "CNTRY_NAME", label: "Country", visible: true },
+                            { fieldName: "POP_CLASS", label: "Population Class", visible: true },
+                        ]
+                    });
+
+                    var flUrl = "http://sampleserver6.arcgisonline.com/arcgis/rest/services/WorldTimeZones/MapServer/0";
+                    var fl = new FeatureLayer(flUrl, {
+                        id: "world-cities",
+                        infoTemplate: flTemplate,
+                        outFields: "*"
+                    });
+                    map.addLayer(fl);
+
+
+                    //add a custom grpahics layer
+                    var customGraphics = new esri.layers.GraphicsLayer({ id: "customGraphics" });
+                    var symbol = new SimpleMarkerSymbol()
+                            .setColor(new dojo.Color("#FF0000"))
+                            .setSize(12)
+                            .setStyle(SimpleMarkerSymbol.STYLE_DIAMOND);
+
+                    //Set up a popup template for the custom graphics layer
+                    //The extended object defined on this template are used by the PopupExtended and will only apply to features or layers with this template assigned
+                    var template = new PopupTemplate({
+                        title: "{name}",
+                        fieldInfos: [
+                            { fieldName: "id", label: "Id", visible: true },
+                            { fieldName: "facilityType", label: "Facility Type", visible: true },
+                            { fieldName: "postcode", label: "Post Code", visible: true },
+                            { fieldName: "isOpen", label: "Opening Hours", visible: true }
+                        ],
+                        extended: { 
+                            actions: [
+                                { text: " IconText", className: "iconText", title: "Custom action with an icon and Text", click: function (feature) { alert("Icon Text clicked on " + "id: " + feature.attributes.id + " " + feature.attributes.name); } },
+                                { text: "", className: "iconOnly", title: "Custom action only using an icon", click: function (feature) { alert("Icon action clicked on " + "id: " + feature.attributes.id + " " + feature.attributes.name); } }
+                            ],
+                            themeClass: "extended", //uses a pretty bad custom theme defined in PopupExtended.css.
+                            scaleSelected: 1.6
+                        }
+                    });
+                    customGraphics.infoTemplate = template;
+                    map.addLayer(customGraphics);
+
+                    //Create an extended Popup.
+                    //The exteneded object contains the custom properties applicable only to PopupExtended. Any other normal popup properties can be defined as per normal (not included in the extended object though).
+                    var extendedPopup = new PopupExtended({
+                        extended: {
+                            themeClass: "light",
+                            draggable: true,
+                            defaultWidth: 250,
+                            actions: [{
+                                text: "Default action", className: "defaultAction", title: "Default action added in extendedPopup properties.",
+                                click: function (feature) { alert("clicked feature - " + feature.attributes); }
+                            }],
+                            hideOnOffClick: false,
+                            multiple: true,
+                            smallStyleWidthBreak: 768,
+                        },
+                        highlight: false,
+                        //titleInBody: false,
+                    }, dojo.create("div"));
+                    
+                    //set the map to use the exteneded popup
+                    extendedPopup.setMap(map); 
+                    map.infoWindow = extendedPopup;
+                    
+                    //create some dummy data and add it to the custom graphics layers
+                    var data = [
+                        { "id": 1, "name": "Sandy Beach Reserve", "postcode": "6054", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 115.9502062, "y": -31.921836 }, { "id": 2, "name": "Point Reserve", "postcode": "6054", "facilityType": "Park or reserve", "isOpen": "DaylightHours", "x": 115.9609911, "y": -31.9044101 }, { "id": 3, "name": "Success Hill Reserve", "postcode": "6054", "facilityType": "Park or reserve", "isOpen": "DaylightHours", "x": 115.955781, "y": -31.89628865 }, { "id": 4, "name": "Jubilee Reserve", "postcode": "6054", "facilityType": "Park or reserve", "isOpen": "DaylightHours", "x": 115.9401637, "y": -31.891474 }, { "id": 5, "name": "Ashfield Reserve", "postcode": "6054", "facilityType": "Park or reserve", "isOpen": "DaylightHours", "x": 115.9364772, "y": -31.91343349 }, { "id": 6, "name": "Old Perth Road & James Street", "postcode": "6054", "facilityType": "Unknown", "isOpen": "DaylightHours", "x": 115.9500197, "y": -31.90444241 }, { "id": 7, "name": "Mary Crescent Reserve", "postcode": "6054", "facilityType": "Park or reserve", "isOpen": "DaylightHours", "x": 115.9480897, "y": -31.89036599 }, { "id": 9, "name": "Bassendean Oval 3", "postcode": "6054", "facilityType": "Sporting facility", "isOpen": "Variable", "x": 115.9564902, "y": -31.90371581 }, { "id": 15, "name": "Apex Park, Moranbah Access Road", "postcode": "4744", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 148.0452418, "y": -22.01444418 }, { "id": 16, "name": "Lions Park, Belyando Avenue", "postcode": "4744", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 148.0439733, "y": -21.9993408 }, { "id": 17, "name": "Parella Street", "postcode": "4744", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 148.0486159, "y": -22.0001525 }, { "id": 18, "name": "Nolan Park", "postcode": "4744", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 148.0661184, "y": -22.00330089 }, { "id": 20, "name": "Binda Park", "postcode": "4744", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 148.0368824, "y": -22.00475579 }, { "id": 21, "name": "Samson Street, Spring Park", "postcode": "4721", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 147.6281099, "y": -22.83395213 }, { "id": 22, "name": "Copperfield Road, Lions Park", "postcode": "4721", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 147.6280868, "y": -22.83004599 }, { "id": 23, "name": "Drummond Street", "postcode": "4721", "facilityType": "Unknown", "isOpen": "AllHours", "x": 147.6423012, "y": -22.81719492 }, { "id": 24, "name": "Lime Street, Centenary Park", "postcode": "4721", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 147.6417002, "y": -22.8183737 }, { "id": 25, "name": "Capella Street", "postcode": "4721", "facilityType": "Unknown", "isOpen": "AllHours", "x": 147.6410069, "y": -22.82389777 }, { "id": 26, "name": "East Palmerston", "postcode": "4860", "facilityType": "Unknown", "isOpen": "AllHours", "x": 145.8481593, "y": -17.60413393 }, { "id": 27, "name": "Sam Brischetto Park", "postcode": "4860", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 145.9889661, "y": -17.52168719 }, { "id": 28, "name": "Fred Drew Park", "postcode": "4860", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 145.9937873, "y": -17.51502477 }, { "id": 29, "name": "Anzac Park", "postcode": "4860", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 146.0278857, "y": -17.52406506 }, { "id": 30, "name": "Jack Fossey Park", "postcode": "4860", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 146.0325387, "y": -17.52355834 }, { "id": 31, "name": "Fitzgerald Park", "postcode": "4860", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 146.0310243, "y": -17.51981571 }, { "id": 33, "name": "Warrina Lakes", "postcode": "4860", "facilityType": "Park or reserve", "isOpen": "Variable", "x": 146.0246337, "y": -17.51839405 }, { "id": 34, "name": "Callandar Park 2", "postcode": "4860", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 146.0269338, "y": -17.51664911 }, { "id": 35, "name": "Coconuts", "postcode": "4860", "facilityType": "Unknown", "isOpen": "AllHours", "x": 146.0644049, "y": -17.50743895 }, { "id": 36, "name": "Flying Fish Point 2", "postcode": "4860", "facilityType": "Unknown", "isOpen": "AllHours", "x": 146.0762983, "y": -17.50206605 }, { "id": 37, "name": "Corso", "postcode": "4860", "facilityType": "Unknown", "isOpen": "AllHours", "x": 146.034905, "y": -17.52523492 }, { "id": 38, "name": "Wrights Park", "postcode": "4860", "facilityType": "Park or reserve", "isOpen": "AllHours", "x": 146.039882, "y": -17.52870492 }
+                    ];
+
+                    for (var i = 0, len = data.length; i < len; i++) {
+                        var d = data[i];
+                        var p = new Point(d.x, d.y, new esri.SpatialReference({ "wkid": 4326 }));
+                        var graphic = new Graphic(p, symbol, lang.clone(d), null);
+                        customGraphics.add(graphic);
+                    }
+
+                    //Uncomment this function call to test some of the api methods.
+                    //testApiMethods(customGraphics);
+                });
+            });
+        });
+
+
+        function testApiMethods(customGraphics) {
+            
+            //this function just set's two timeouts, one to dynamically show a couple of popups, the other to run some api methods on those popups.
+            //Couldn't be bothered creating a UI to test this.
+            setTimeout(function () {
+
+                var d = customGraphics.graphics[1];
+                var d2 = customGraphics.graphics[20];
+                var d3 = customGraphics.graphics[15];
+
+                var loc = map.toScreen(d.geometry);
+                map.infoWindow.setFeatures([d]);
+                map.infoWindow.show(loc);
+
+                var loc2 = map.toScreen(d2.geometry);
+                map.infoWindow.setFeatures([d2, d3]);
+                map.infoWindow.show(loc2);
+
+                setTimeout(function () {
+                    console.log('api test');
+                    //Uncomment one line at time to test each one
+                    //map.infoWindow.resize(350, 300, d);
+                    //map.infoWindow.restore(d);
+                    //map.infoWindow.hide(d);
+                    //map.infoWindow.select(1, d2);
+                    //map.infoWindow.selectNext(d2);
+                    //map.infoWindow.selectPrevious(d2);
+                    //map.infoWindow.maximize(d);
+                    //map.infoWindow.setContent("<strong>some content</content>", d);
+                    //map.infoWindow.setTitle("A new title", d2);
+                }, 2000);
+            }, 1000)
+
+        }
+
+    </script>
+
+
+</head>
+<body>
+
+    <div id="map">
+
+
+    </div>
+
+</body>
+</html>
