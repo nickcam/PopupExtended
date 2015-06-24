@@ -264,10 +264,10 @@
 
             self._addTemplateOptions(this);
 
-            if (self.options.defaultWidth) {
+            if (self.defaultWidth) {
                 //set the default width using resize if one was set in options
                 var height = domStyle.get(this.wrapperNode, "height"); //retain the height
-                this.resize(self.options.defaultWidth, height);
+                this.resize(self.defaultWidth, height);
             }
 
             this.isSnapped = true; //set is Snapped to true as it hasn't been dragged yet or is not draggable
