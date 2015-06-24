@@ -13,21 +13,44 @@
   declare, lang, arrayUtils, domConstruct, domStyle, fx, on, PopupTemplate, Popup
 ) {
     return declare([Popup], {
-        constructor: function (options) {
-            
+        constructor: function (options) {            
+            /* options description:
+               Existing Popup options can be passed as per normal in the options object
+               The 'extended' property on options contains explicit options for PopupExtended. These are explained below. 
+               themeClass (string): default null. Set a theme class to be applied to the standard popup. A custom one or 'light', 'dark' etc. Can also be set on a PopupTemplate. 
+                                    Features that have PopupTemplates containing this value will override the value passed to this construtor.
+               actions ([object, object, ...]): default null. An array of action objects to add to the actions bar in the popup.
+                                    An action object contains the following properties:
+                                    { 
+                                     text: (string) The text of the link, 
+                                     className: (string) a custom class to apply to an action, 
+                                     title: (string) a title attribute value to add to the link, 
+                                     click: (function) This is called when the action is clicked. Will pass teh current feature back as a paramter to the callback
+                                    }
+                                    Can also be set on a PopupTemplate. Templates containing this value will override the value passed to this construtor.
+               scaleSelected (number): default null. If this is set to a value the selected feature will scale in size by the value. 1 = same size, 1.5 = grow 50%, 2 = grow 100%...etc. A bit experimental, think it's a bit buggy only useful for point geometries as well.  
+                                    Can also be set on a PopupTemplate. Templates containing this value will override the value passed to this construtor.
+               draggable (boolean): default false. Will make the popup draggable by dragging on the title bar. Once dragged (unsnapped from anchor) it will also be resizable.
+               defaultWidth (number): default null. The width in pixels to set a popup to when first shown
+               multiple (boolean): default false. If multiple popups can be opened at once.
+               hideOnOffClick (boolean): default false. Whether to hide all popups when a click occurs that is not on the layer. If false then the close button will have to be used.
+               smallStyleWidthBreak (number): default 768. The width to use small popups if the map width is less than.
+
+            */
+
             options = options || {};
             options.extended = options.extended || {};
             
             //set the extended properties
-            this.themeClass = options.extended.themeClass; //Set a theme class to be applied to the standard popup. A custom one or 'light', 'dark' etc. Can also be set on a PopupTemplate. Templates containing this value will override the value passed to this construtor.
-            this.actions = options.extended.actions; //Custom actions to be added to the template. Can also be set on a PopupTemplate. Templates containing this value will override the value passed to this construtor.
-            this.scaleSelected = options.extended.scaleSelected; //Default null. If this is set to a value the selected feature will scale in size by the value. 1 = same size, 1.5 = grow 50%, 2 = grow 100%...etc. A bit experimental though, think it's a bit buggy only useful for point as well.  Can also be set on a PopupTemplate. Templates containing this value will override the value passed to this construtor.
+            this.themeClass = options.extended.themeClass; 
+            this.actions = options.extended.actions; 
+            this.scaleSelected = options.extended.scaleSelected; 
 
-            this.draggable = options.extended.draggable === true; //Default false. Will make the popup draggable by dragging on the title bar. Once dragged/unsnapped it will also be resizable.
-            this.defaultWidth = options.extended.defaultWidth; //Default null. The width in pixels to set a popup to when first shown
-            this.multiple = options.extended.multiple === true; //Default false. If multiple info windows can be opened at once.
-            this.hideOnOffClick = options.extended.hideOnOffClick === true; //Default false. Whether to hide all popups when a click occurs that is not on the layer. If false then the close button will have to be used.
-            this.smallStyleWidthBreak = options.extended.smallStyleWidthBreak || 768; //the width to use small popups if map is less than 
+            this.draggable = options.extended.draggable === true; 
+            this.defaultWidth = options.extended.defaultWidth; 
+            this.multiple = options.extended.multiple === true; 
+            this.hideOnOffClick = options.extended.hideOnOffClick === true; 
+            this.smallStyleWidthBreak = options.extended.smallStyleWidthBreak || 768; 
             
             delete options.extended;
 
