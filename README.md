@@ -14,6 +14,9 @@ Popup extended allows the following:
 
 Check out the code to see options and their use.
 
+I only tested this for the use cases I had at the moment...I didn't try it out with media, attachments or anything particularly funky. Theoretically it should work the same as a normal popup...theoretically :).
+
+
 A crude example is here:
 http://popupextended.azurewebsites.net/
 
