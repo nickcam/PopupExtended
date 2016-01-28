@@ -1,4 +1,4 @@
-﻿define([
+define([
   "dojo/_base/declare",
   "dojo/_base/lang",
   "dojo/_base/array",
@@ -13,7 +13,7 @@
   declare, lang, arrayUtils, domConstruct, domStyle, fx, on, PopupTemplate, Popup
 ) {
     return declare([Popup], {
-        constructor: function (options) {            
+        constructor: function (options) {
             /* options description:
                Existing Popup options can be passed as per normal in the options object
                The 'extended' property on options contains explicit options for PopupExtended. These are explained below. 
@@ -25,7 +25,8 @@
                                      text: (string) The text of the link, 
                                      className: (string) a custom class to apply to an action, 
                                      title: (string) a title attribute value to add to the link, 
-                                     click: (function) This is called when the action is clicked. Will pass teh current feature back as a paramter to the callback
+                                     click: (function) This is called when the action is clicked. Will pass the current feature back as a paramter to the callback,
+                                     condition: (function) If this is defined the action will only appear if this function evaluates to true. Use it to conditionally apply actions to certain features. Will pass the current feature as a paramter to the callback,
                                     }
                                     Can also be set on a PopupTemplate. Templates containing this value will override the value passed to this construtor.
                scaleSelected (number): default null. If this is set to a value the selected feature will scale in size by the value. 1 = same size, 1.5 = grow 50%, 2 = grow 100%...etc. A bit experimental, think it's a bit buggy only useful for point geometries as well.  
@@ -40,18 +41,18 @@
 
             options = options || {};
             options.extended = options.extended || {};
-            
-            //set the extended properties
-            this.themeClass = options.extended.themeClass; 
-            this.actions = options.extended.actions; 
-            this.scaleSelected = options.extended.scaleSelected; 
 
-            this.draggable = options.extended.draggable === true; 
-            this.defaultWidth = options.extended.defaultWidth; 
-            this.multiple = options.extended.multiple === true; 
-            this.hideOnOffClick = options.extended.hideOnOffClick === true; 
-            this.smallStyleWidthBreak = options.extended.smallStyleWidthBreak || 768; 
-            
+            //set the extended properties
+            this.themeClass = options.extended.themeClass;
+            this.actions = options.extended.actions;
+            this.scaleSelected = options.extended.scaleSelected;
+
+            this.draggable = options.extended.draggable === true;
+            this.defaultWidth = options.extended.defaultWidth;
+            this.multiple = options.extended.multiple === true;
+            this.hideOnOffClick = options.extended.hideOnOffClick === true;
+            this.smallStyleWidthBreak = options.extended.smallStyleWidthBreak || 768;
+
             delete options.extended;
 
             //clear some properties on this object
@@ -70,7 +71,7 @@
 
         setMap: function (map) {
             this.map = map;
-            
+
             //wire up some events
             this.events.push(on(this.map, "resize", lang.hitch(this, this._setPopupMode)));
             this.events.push(on(this.map, "pan-end", lang.hitch(this, this._mapPanEnd)));
@@ -105,7 +106,7 @@
         },
 
         show: function (location, options) {
-           
+
             for (var i = 0, len = this.openPopups.length; i < len; i++) {
                 //check if having multiple open at once is allowed, if not close any open ones down.
                 //Also check if the features for the popup to open match any open popups already, if they do, close the open popup so a new one resnaps to the point. Catering for draggable.
@@ -139,14 +140,14 @@
 
             popup.domNode.style.opacity = 0;
             popup.show(location, options);
-
+           
             //this.clearFeatures();
         },
 
-      
-        hide: function(feature){
+
+        hide: function (feature) {
             //This method differs from default hide in that you must pass the feature to hide if you're attempting to hide a particular popup
-            
+
             //if this flag is true hide all open popups
             if (!feature && this.hideOnOffClick) {
                 for (var i = 0, len = this.openPopups.length; i < len; i++) {
@@ -166,10 +167,10 @@
             }
         },
 
-        resize: function(width, height, feature) {
+        resize: function (width, height, feature) {
             //If a feature is passed in this method will only resize the popup where this feature is the currently selected.
             //If a feature is not provided it will resize all open popups
-            
+
             if (feature) {
                 this._callPopupApiMethodsFromFeature(feature, "resize", arguments);
             }
@@ -180,11 +181,11 @@
             }
         },
 
-        maximize: function(feature){
+        maximize: function (feature) {
             this._callPopupApiMethodsFromFeature(feature, "maximize", arguments);
         },
 
-        
+
         restore: function (feature) {
             this._callPopupApiMethodsFromFeature(feature, "restore", arguments);
         },
@@ -229,10 +230,10 @@
             //this method runs api methods against indiviudal popups. The popup is found by either being the only one open
             //or by the fact the feature being passed in is the selected feature of the popup
             var pu = this.openPopups.length === 1 ? this.openPopups[0] : this.getPopupForFeature(feature);
-            if(pu) {
+            if (pu) {
                 return pu[method].apply(pu, arguments);
             }
-            
+
         },
 
 
@@ -260,21 +261,21 @@
 
         _popupShown: function (self) {
             //scope: 'self' is the class, 'this' is the child popup that is opened.
-             //console.log('shown');
+            //console.log('shown');
 
             self._addTemplateOptions(this);
 
-            if (self.defaultWidth) {
+            if (self.options.defaultWidth) {
                 //set the default width using resize if one was set in options
                 var height = domStyle.get(this.wrapperNode, "height"); //retain the height
-                this.resize(self.defaultWidth, height);
+                this.resize(self.options.defaultWidth, height);
             }
 
             this.isSnapped = true; //set is Snapped to true as it hasn't been dragged yet or is not draggable
             if (self.draggable) {
                 self._makeDraggable(this);
             }
-            
+
             if (self.popupMode === "small") {
                 //hide the content pane, make it have no height and reposition for small popups
                 dojo.query(".contentPane", this.domNode).style({ "display": "none", "height": "0px" });
@@ -282,9 +283,11 @@
             }
 
             this.domNode.style.opacity = 1;
+
         },
 
-        _popupSelectionChange: function(self){
+
+        _popupSelectionChange: function (self) {
             //scope: 'self' is the class, 'this' is the child popup refering to the event
             //console.log('selection change');
 
@@ -292,7 +295,7 @@
             if (this.isShowing && !this.isSnapped && !this._maximized) {
                 self._resetPopupDragPosition(this); //maintain dragged position if unsnapped and not maximized
             }
-            
+
         },
 
         _popupHidden: function (self) {
@@ -304,7 +307,7 @@
             if (feature && feature.scaleSelected) {
                 self._scaleFeatureDown(feature);
             }
-           
+
 
             //remove any event handlers assigned to the popup explicity
             for (var i = 0, len = this.popupEvents.length; i < len; i++) {
@@ -357,7 +360,7 @@
 
         //#region draggable / resizable stuff
 
-        _makeDraggable: function(popup){
+        _makeDraggable: function (popup) {
             var titlePane = dojo.query(".titlePane", popup.domNode);
             titlePane.style("cursor", "move");
 
@@ -380,7 +383,7 @@
 
                 //if the popupwrapper has a bottom setting instead of top, convert bottom to equivalent top for correct resizing
                 var bottom = domStyle.get(popup.wrapperNode, "bottom");
-                if(bottom && bottom.toString().indexOf("px") !== null) {
+                if (bottom && bottom.toString().indexOf("px") !== null) {
                     bottom = parseInt(bottom.replace("px", ""));
                 }
                 if (bottom && bottom !== 0) {
@@ -393,7 +396,7 @@
                 dojo.setSelectable(this.map.root, false);
             })));
 
-           
+
         },
 
         _addResizer: function (popup) {
@@ -471,7 +474,7 @@
                 var top = (this.map.popupDragging.startTop + e.screenY - this.map.popupDragging.startY) + 'px';
                 domStyle.set(pu.domNode, "left", left);
                 domStyle.set(pu.domNode, "top", top);
-            }            
+            }
             else if (this.map.popupResizing) {
                 var width = (this.map.popupResizing.startWidth + e.screenX - this.map.popupResizing.startX) + 'px';
                 var height = (this.map.popupResizing.startHeight + e.screenY - this.map.popupResizing.startY) + 'px';
@@ -486,19 +489,23 @@
             domStyle.set(popup.domNode, "top", popup.draggedTop + "px");
         },
 
-        
+
         //#endregion
 
         //#region private methods
 
-        _setPopupMode: function(){
+        _setPopupMode: function () {
             this.popupMode = this.map.width <= this.smallStyleWidthBreak ? "small" : "normal";
         },
 
-        _addTemplateOptions: function(popup){
+        _addTemplateOptions: function (popup) {
             var feature = popup.getSelectedFeature();
             var template = feature.infoTemplate || feature.getLayer().infoTemplate;
             var templateOptions = template.info.extended || {};
+
+            //if (templateOptions.tabs && tempalteOptions.tabs.length) {
+            //    console.log('tabs exist');
+            //}
 
             //set the template proeprties of the popup. Options set in a template object take precedence over options set on the PopupExtended.
 
@@ -525,14 +532,14 @@
                 feature.scaleSelected = scaleSelected;
                 this._scaleFeatureUp(feature);
             }
-           
+
             //add an extra class for the small popup so it can be themed differently if desired
             if (this.popupMode === "small") {
                 dojo.addClass(popup.domNode, "small");
             }
 
             //destory any pe-actions that may already exist
-            var actionsList = dojo.query(".actionList", popup.domNode)[0];            
+            var actionsList = dojo.query(".actionList", popup.domNode)[0];
             dojo.query(".pe-action", actionsList).forEach(dojo.destroy);
 
             //get any custom actions
@@ -547,6 +554,15 @@
                 //add an 'a' node for each action and assign click handler
                 for (var i = 0, len = actions.length; i < len; i++) {
                     var action = actions[i];
+
+                    var f = popup.getSelectedFeature();
+                    //check if this action has a condition function applied. Return early if it evaluates to false
+                    if (action.condition) {
+                        if (action.condition(f) !== true) {
+                            return;
+                        }
+                    }
+
                     var link = domConstruct.create("a", {
                         "class": "action pe-action " + action.className,
                         "innerHTML": "<span>" + action.text + "</span>",
@@ -557,7 +573,6 @@
 
                     popup.popupEvents.push(on(link, "click", dojo.partial(function (popup) {
                         if (this.action) {
-                            var f = popup.getSelectedFeature();
                             this.action.click(f); //run the click handler passed in the action list if one was assigned.
                         }
                     }, popup)));
@@ -571,7 +586,7 @@
             if ((a == null || b == null) || a.length != b.length) {
                 return false; //if either is null or length doesn;t match then false straight up
             }
-          
+
             var len = a.length;
             for (var i = 0; i < len; i++) {
                 var found = false;
@@ -584,7 +599,7 @@
                 if (!found) {
                     return false;
                 }
-                
+
             }
             return true;
 
