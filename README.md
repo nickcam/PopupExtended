@@ -18,6 +18,6 @@ I only tested this for the use cases I had at the moment...I didn't try it out w
 
 
 A crude example is here:
-http://popupextended.azurewebsites.net/
+http://popupextended.azurewebsites.net/index.html
 
 
